@@ -84,7 +84,7 @@ export function InspectPrepForm({ data, attachments, onSubmit, onSave, isHistori
               <Label>考察日期</Label>
               <DatePicker
                 date={watchedValues.inspect_date}
-                setDate={(date) => setValue("inspect_date", date)}
+                setDate={(date) => date && setValue("inspect_date", date)}
               />
             </div>
             <div className="space-y-2">

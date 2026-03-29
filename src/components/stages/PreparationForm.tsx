@@ -151,21 +151,21 @@ export function PreparationForm({ data, attachments, onSubmit, onSave, isHistori
               <Label>出生年月</Label>
               <DatePicker
                 date={watchedValues.prep_birth_date}
-                setDate={(date) => setValue("prep_birth_date", date)}
+                setDate={(date) => date && setValue("prep_birth_date", date)}
               />
             </div>
             <div className="space-y-2">
               <Label>入党时间</Label>
               <DatePicker
                 date={watchedValues.prep_join_party_date}
-                setDate={(date) => setValue("prep_join_party_date", date)}
+                setDate={(date) => date && setValue("prep_join_party_date", date)}
               />
             </div>
             <div className="space-y-2">
               <Label>参加工作时间</Label>
               <DatePicker
                 date={watchedValues.prep_work_date}
-                setDate={(date) => setValue("prep_work_date", date)}
+                setDate={(date) => date && setValue("prep_work_date", date)}
               />
             </div>
           </div>
@@ -175,14 +175,14 @@ export function PreparationForm({ data, attachments, onSubmit, onSave, isHistori
               <Label>任现职务时间</Label>
               <DatePicker
                 date={watchedValues.prep_current_pos_date}
-                setDate={(date) => setValue("prep_current_pos_date", date)}
+                setDate={(date) => date && setValue("prep_current_pos_date", date)}
               />
             </div>
             <div className="space-y-2">
               <Label>任现职级时间</Label>
               <DatePicker
                 date={watchedValues.prep_current_rank_date}
-                setDate={(date) => setValue("prep_current_rank_date", date)}
+                setDate={(date) => date && setValue("prep_current_rank_date", date)}
               />
             </div>
           </div>

@@ -140,21 +140,21 @@ export function MotionForm({ data, attachments, onSubmit, onSave, isHistorical =
               <Label>征求纪检部门日期</Label>
               <DatePicker
                 date={watchedValues.motion_discipline_date}
-                setDate={(date) => setValue("motion_discipline_date", date)}
+                setDate={(date) => date && setValue("motion_discipline_date", date)}
               />
             </div>
             <div className="space-y-2">
               <Label>上党委会日期</Label>
               <DatePicker
                 date={watchedValues.motion_party_committee_date}
-                setDate={(date) => setValue("motion_party_committee_date", date)}
+                setDate={(date) => date && setValue("motion_party_committee_date", date)}
               />
             </div>
             <div className="space-y-2">
               <Label>纪检部门回复日期</Label>
               <DatePicker
                 date={watchedValues.motion_discipline_reply_date}
-                setDate={(date) => setValue("motion_discipline_reply_date", date)}
+                setDate={(date) => date && setValue("motion_discipline_reply_date", date)}
               />
             </div>
           </div>
