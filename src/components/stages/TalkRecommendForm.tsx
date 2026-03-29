@@ -3,33 +3,35 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { SelectionCase } from "@/lib/supabase"
+import { SelectionCase, Attachment } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
 
 const talkRecommendSchema = z.object({
-  talk_scope: z.string().optional(),
-  talk_expected: z.string().optional(),
-  talk_actual: z.string().optional(),
-  talk_recommend: z.string().optional(),
-  talk_no_recommend: z.string().optional(),
-  talk_other: z.string().optional(),
-  talk_abstain: z.string().optional(),
-  talk_rank: z.string().optional(),
-  talk_rate: z.string().optional(),
+  talk_scope: z.string().min(1, "请输入谈话范围"),
+  talk_expected: z.string().min(1, "请输入应到人数"),
+  talk_actual: z.string().min(1, "请输入实到人数"),
+  talk_recommend: z.string().min(1, "请输入推荐人数"),
+  talk_no_recommend: z.string().min(1, "请输入不推荐人数"),
+  talk_other: z.string().min(1, "请输入其他意见人数"),
+  talk_abstain: z.string().min(1, "请输入弃权人数"),
+  talk_rank: z.string().min(1, "请输入排名"),
+  talk_rate: z.string().min(1, "请输入得票率"),
 })
 
 type TalkRecommendFormData = z.infer<typeof talkRecommendSchema>
 
 interface TalkRecommendFormProps {
   data?: Partial<SelectionCase>
+  attachments?: Attachment[]
   onSubmit: (data: TalkRecommendFormData) => void
   onSave: (data: TalkRecommendFormData) => void
 }
 
-export function TalkRecommendForm({ data, onSubmit, onSave }: TalkRecommendFormProps) {
+export function TalkRecommendForm({ data, attachments, onSubmit, onSave }: TalkRecommendFormProps) {
   const {
     register,
     handleSubmit,
@@ -48,8 +50,39 @@ export function TalkRecommendForm({ data, onSubmit, onSave }: TalkRecommendFormP
     },
   })
 
+  // 验证文件上传
+  const validateFiles = (): boolean => {
+    const requiredFiles = [
+      '谈话记录',
+      '推荐情况汇总'
+    ]
+    
+    const uploadedFiles = attachments || []
+    const uploadedFileNames = uploadedFiles.map(file => file.file_name)
+    
+    const missingFiles = requiredFiles.filter(file => 
+      !uploadedFileNames.some(uploaded => uploaded.includes(file))
+    )
+    
+    if (missingFiles.length > 0) {
+      toast.error(`请上传以下文件：${missingFiles.join('、')}`)
+      return false
+    }
+    
+    return true
+  }
+
+  const handleFormSubmit = (data: TalkRecommendFormData) => {
+    // 先验证文件上传
+    if (!validateFiles()) {
+      return
+    }
+    // 然后提交表单
+    onSubmit(data)
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>谈话调研推荐情况</CardTitle>

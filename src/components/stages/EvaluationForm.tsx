@@ -3,33 +3,35 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { SelectionCase } from "@/lib/supabase"
+import { SelectionCase, Attachment } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
 
 const evaluationSchema = z.object({
-  eval_scope: z.string().optional(),
-  eval_expected: z.string().optional(),
-  eval_actual: z.string().optional(),
-  eval_excellent: z.string().optional(),
-  eval_competent: z.string().optional(),
-  eval_basic: z.string().optional(),
-  eval_incompetent: z.string().optional(),
-  eval_excellent_rate: z.string().optional(),
-  eval_pass_rate: z.string().optional(),
+  eval_scope: z.string().min(1, "请输入测评范围"),
+  eval_expected: z.string().min(1, "请输入应到人数"),
+  eval_actual: z.string().min(1, "请输入实到人数"),
+  eval_excellent: z.string().min(1, "请输入优秀票数"),
+  eval_competent: z.string().min(1, "请输入称职票数"),
+  eval_basic: z.string().min(1, "请输入基本称职票数"),
+  eval_incompetent: z.string().min(1, "请输入不称职票数"),
+  eval_excellent_rate: z.string().min(1, "请输入优秀率"),
+  eval_pass_rate: z.string().min(1, "请输入称职及以上率"),
 })
 
 type EvaluationFormData = z.infer<typeof evaluationSchema>
 
 interface EvaluationFormProps {
   data?: Partial<SelectionCase>
+  attachments?: Attachment[]
   onSubmit: (data: EvaluationFormData) => void
   onSave: (data: EvaluationFormData) => void
 }
 
-export function EvaluationForm({ data, onSubmit, onSave }: EvaluationFormProps) {
+export function EvaluationForm({ data, attachments, onSubmit, onSave }: EvaluationFormProps) {
   const {
     register,
     handleSubmit,
@@ -48,8 +50,39 @@ export function EvaluationForm({ data, onSubmit, onSave }: EvaluationFormProps) 
     },
   })
 
+  // 验证文件上传
+  const validateFiles = (): boolean => {
+    const requiredFiles = [
+      '测评表',
+      '测评结果汇总'
+    ]
+    
+    const uploadedFiles = attachments || []
+    const uploadedFileNames = uploadedFiles.map(file => file.file_name)
+    
+    const missingFiles = requiredFiles.filter(file => 
+      !uploadedFileNames.some(uploaded => uploaded.includes(file))
+    )
+    
+    if (missingFiles.length > 0) {
+      toast.error(`请上传以下文件：${missingFiles.join('、')}`)
+      return false
+    }
+    
+    return true
+  }
+
+  const handleFormSubmit = (data: EvaluationFormData) => {
+    // 先验证文件上传
+    if (!validateFiles()) {
+      return
+    }
+    // 然后提交表单
+    onSubmit(data)
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>民主测评情况</CardTitle>

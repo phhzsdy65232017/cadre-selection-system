@@ -50,7 +50,10 @@ const stageFileRequirements: Record<SelectionStage, string[]> = {
     '公示材料',
     '任职谈话记录'
   ],
-  completed: []
+  completed: [
+    '干部选拔任用纪实表',
+    '干部选拔任用情况审核表'
+  ]
 }
 
 interface FileUploadProps {
@@ -58,9 +61,10 @@ interface FileUploadProps {
   stageKey: SelectionStage
   attachments: Attachment[]
   onUploadComplete: () => void
+  readOnly?: boolean
 }
 
-export function FileUpload({ caseId, stageKey, attachments, onUploadComplete }: FileUploadProps) {
+export function FileUpload({ caseId, stageKey, attachments, onUploadComplete, readOnly = false }: FileUploadProps) {
   const [uploading, setUploading] = useState(false)
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -117,10 +121,12 @@ export function FileUpload({ caseId, stageKey, attachments, onUploadComplete }: 
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    disabled: uploading,
+    disabled: uploading || readOnly,
   })
 
   const handleDelete = async (attachmentId: string, fileUrl: string) => {
+    if (readOnly) return
+    
     try {
       // 从数据库删除记录
       const { error: dbError } = await supabase
@@ -169,32 +175,43 @@ export function FileUpload({ caseId, stageKey, attachments, onUploadComplete }: 
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-            isDragActive
-              ? 'border-primary bg-primary/5'
-              : 'border-gray-300 hover:border-gray-400'
-          } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <input {...getInputProps()} />
-          {uploading ? (
-            <div className="flex flex-col items-center space-y-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p>上传中...</p>
-            </div>
-          ) : (
+        {!readOnly ? (
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+              isDragActive
+                ? 'border-primary bg-primary/5'
+                : 'border-gray-300 hover:border-gray-400'
+            } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <input {...getInputProps()} />
+            {uploading ? (
+              <div className="flex flex-col items-center space-y-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p>上传中...</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center space-y-2">
+                <Upload className="h-8 w-8 text-gray-400" />
+                <p className="text-sm text-gray-600">
+                  {isDragActive ? '释放文件以上传' : '拖拽文件到此处，或点击选择文件'}
+                </p>
+                <p className="text-xs text-gray-400">
+                  支持 PDF、Word、图片等格式
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="border-2 border-dashed rounded-lg p-8 text-center bg-gray-50">
             <div className="flex flex-col items-center space-y-2">
               <Upload className="h-8 w-8 text-gray-400" />
               <p className="text-sm text-gray-600">
-                {isDragActive ? '释放文件以上传' : '拖拽文件到此处，或点击选择文件'}
-              </p>
-              <p className="text-xs text-gray-400">
-                支持 PDF、Word、图片等格式
+                流程已完成，无法上传文件
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {attachments.length > 0 && (
           <div className="space-y-2">
@@ -223,13 +240,15 @@ export function FileUpload({ caseId, stageKey, attachments, onUploadComplete }: 
                     >
                       查看
                     </a>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(attachment.id, attachment.file_url)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    {!readOnly && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(attachment.id, attachment.file_url)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

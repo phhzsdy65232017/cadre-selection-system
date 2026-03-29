@@ -3,27 +3,29 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { SelectionCase } from "@/lib/supabase"
+import { SelectionCase, Attachment } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
 
 const inspectPrepSchema = z.object({
-  inspect_date: z.date().optional(),
-  inspect_team_members: z.string().optional(),
+  inspect_date: z.date({ required_error: "请选择考察日期" }),
+  inspect_team_members: z.string().min(1, "请输入考察组成员"),
 })
 
 type InspectPrepFormData = z.infer<typeof inspectPrepSchema>
 
 interface InspectPrepFormProps {
   data?: Partial<SelectionCase>
+  attachments?: Attachment[]
   onSubmit: (data: InspectPrepFormData) => void
   onSave: (data: InspectPrepFormData) => void
 }
 
-export function InspectPrepForm({ data, onSubmit, onSave }: InspectPrepFormProps) {
+export function InspectPrepForm({ data, attachments, onSubmit, onSave }: InspectPrepFormProps) {
   const {
     register,
     handleSubmit,
@@ -38,8 +40,39 @@ export function InspectPrepForm({ data, onSubmit, onSave }: InspectPrepFormProps
 
   const watchedValues = watch()
 
+  // 验证文件上传
+  const validateFiles = (): boolean => {
+    const requiredFiles = [
+      '考察方案',
+      '考察组成员名单'
+    ]
+    
+    const uploadedFiles = attachments || []
+    const uploadedFileNames = uploadedFiles.map(file => file.file_name)
+    
+    const missingFiles = requiredFiles.filter(file => 
+      !uploadedFileNames.some(uploaded => uploaded.includes(file))
+    )
+    
+    if (missingFiles.length > 0) {
+      toast.error(`请上传以下文件：${missingFiles.join('、')}`)
+      return false
+    }
+    
+    return true
+  }
+
+  const handleFormSubmit = (data: InspectPrepFormData) => {
+    // 先验证文件上传
+    if (!validateFiles()) {
+      return
+    }
+    // 然后提交表单
+    onSubmit(data)
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>考察准备</CardTitle>

@@ -28,7 +28,7 @@ export function StageStepper({ currentStage, onStageClick }: StageStepperProps) 
       </div>
 
       <div className="space-y-2">
-        {STAGES.filter(s => s.key !== 'completed').map((stage) => {
+        {STAGES.map((stage) => {
           const isCompleted = stage.order < currentOrder
           const isCurrent = stage.key === currentStage
           const isLocked = stage.order > currentOrder

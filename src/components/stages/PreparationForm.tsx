@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { SelectionCase } from "@/lib/supabase"
+import { SelectionCase, Attachment } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { toast } from "sonner"
 
 const preparationSchema = z.object({
   candidate_name: z.string().min(1, "请输入干部姓名"),
@@ -37,11 +38,13 @@ type PreparationFormData = z.infer<typeof preparationSchema>
 
 interface PreparationFormProps {
   data?: Partial<SelectionCase>
+  attachments?: Attachment[]
   onSubmit: (data: PreparationFormData) => void
   onSave: (data: PreparationFormData) => void
+  isHistorical?: boolean
 }
 
-export function PreparationForm({ data, onSubmit, onSave }: PreparationFormProps) {
+export function PreparationForm({ data, attachments, onSubmit, onSave, isHistorical = false }: PreparationFormProps) {
   const {
     register,
     handleSubmit,
@@ -54,6 +57,11 @@ export function PreparationForm({ data, onSubmit, onSave }: PreparationFormProps
       candidate_name: data?.candidate_name || "",
       prep_gender: data?.prep_gender || "",
       prep_nation: data?.prep_nation || "",
+      prep_birth_date: data?.prep_birth_date ? new Date(data.prep_birth_date) : undefined,
+      prep_join_party_date: data?.prep_join_party_date ? new Date(data.prep_join_party_date) : undefined,
+      prep_work_date: data?.prep_work_date ? new Date(data.prep_work_date) : undefined,
+      prep_current_pos_date: data?.prep_current_pos_date ? new Date(data.prep_current_pos_date) : undefined,
+      prep_current_rank_date: data?.prep_current_rank_date ? new Date(data.prep_current_rank_date) : undefined,
       prep_current_pos: data?.prep_current_pos || "",
       prep_intended_pos: data?.prep_intended_pos || "",
       prep_removal_pos: data?.prep_removal_pos || "",
@@ -69,8 +77,40 @@ export function PreparationForm({ data, onSubmit, onSave }: PreparationFormProps
 
   const watchedValues = watch()
 
+  // 验证文件上传
+  const validateFiles = (): boolean => {
+    const requiredFiles = [
+      '请示文件',
+      '上级批复',
+      '干部基本信息表'
+    ]
+    
+    const uploadedFiles = attachments || []
+    const uploadedFileNames = uploadedFiles.map(file => file.file_name)
+    
+    const missingFiles = requiredFiles.filter(file => 
+      !uploadedFileNames.some(uploaded => uploaded.includes(file))
+    )
+    
+    if (missingFiles.length > 0) {
+      toast.error(`请上传以下文件：${missingFiles.join('、')}`)
+      return false
+    }
+    
+    return true
+  }
+
+  const handleFormSubmit = (data: PreparationFormData) => {
+    // 先验证文件上传
+    if (!validateFiles()) {
+      return
+    }
+    // 然后提交表单
+    onSubmit(data)
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>基本信息</CardTitle>
@@ -271,7 +311,11 @@ export function PreparationForm({ data, onSubmit, onSave }: PreparationFormProps
         <Button type="button" variant="outline" onClick={handleSubmit(onSave)}>
           保存草稿
         </Button>
-        <Button type="submit">保存并进入下一环节</Button>
+        {!isHistorical && (
+          <Button type="submit">
+            保存并进入下一环节
+          </Button>
+        )}
       </div>
     </form>
   )

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Plus, FileText, ChevronRight, User, Settings, LogOut } from "lucide-react"
+import { Plus, FileText, ChevronRight, User, Settings, LogOut, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -100,6 +100,33 @@ export default function Home() {
     return <Badge variant="secondary">进行中</Badge>
   }
 
+  const handleDeleteCase = (id: string) => {
+    // 先显示确认对话框
+    if (!confirm('确定要删除这个提拔流程吗？此操作不可撤销。')) {
+      return
+    }
+
+    // 用户确认后再执行删除操作
+    const deleteCase = async () => {
+      try {
+        const { error } = await supabase
+          .from('selection_case')
+          .delete()
+          .eq('id', id)
+
+        if (error) throw error
+        
+        toast.success('删除成功')
+        fetchCases() // 重新获取流程列表
+      } catch (error) {
+        console.error('删除失败:', error)
+        toast.error('删除失败')
+      }
+    }
+
+    deleteCase()
+  }
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -193,12 +220,11 @@ export default function Home() {
               return (
                 <Card
                   key={caseItem.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => router.push(`/case/${caseItem.id}`)}
+                  className="hover:shadow-md transition-shadow"
                 >
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
-                      <div>
+                      <div className="flex-1 cursor-pointer" onClick={() => router.push(`/case/${caseItem.id}`)}>
                         <CardTitle className="text-lg">
                           {caseItem.candidate_name}
                         </CardTitle>
@@ -206,10 +232,60 @@ export default function Home() {
                           创建时间: {new Date(caseItem.created_at).toLocaleDateString('zh-CN')}
                         </CardDescription>
                       </div>
-                      {getStatusBadge(caseItem.status)}
+                      <div className="flex items-start space-x-2">
+                        {isSuperAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              
+                              // 1. 显示确认对话框
+                              var result = window.confirm('确定要删除这个提拔流程吗？此操作不可撤销。');
+                              
+                              // 2. 只有用户确认后才执行删除
+                              if (result === true) {
+                                // 3. 执行删除操作
+                                console.log('开始删除流程:', caseItem.id);
+                                console.log('当前用户:', user?.id);
+                                console.log('用户角色:', profile?.role);
+                                
+                                // 然后执行实际的删除操作
+                                supabase
+                                  .from('selection_case')
+                                  .delete()
+                                  .eq('id', caseItem.id)
+                                  .then(({ error, data }) => {
+                                    console.log('删除操作结果 - 数据:', data);
+                                    console.log('删除操作结果 - 错误:', error);
+                                    if (error) {
+                                      console.error('删除失败:', error)
+                                      toast.error('删除失败: ' + error.message)
+                                    } else {
+                                      console.log('删除成功');
+                                      toast.success('删除成功')
+                                      // 从本地状态中移除该流程
+                                      setCases(prevCases => prevCases.filter(c => c.id !== caseItem.id));
+                                    }
+                                  })
+                                  .catch((err) => {
+                                    console.error('删除操作异常:', err);
+                                    toast.error('删除失败: 网络错误');
+                                  })
+                              } else {
+                                console.log('用户取消删除');
+                              }
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {getStatusBadge(caseItem.status)}
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="cursor-pointer" onClick={() => router.push(`/case/${caseItem.id}`)}>
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex justify-between text-sm mb-2">

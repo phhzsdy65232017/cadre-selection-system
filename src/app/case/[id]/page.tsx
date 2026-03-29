@@ -127,6 +127,12 @@ export default function CaseDetailPage() {
   }
 
   const handleStageClick = (stage: SelectionStage) => {
+    if (caseData?.status === 'completed') {
+      setViewingStage(stage)
+      toast.info(`查看 ${STAGES.find(s => s.key === stage)?.label}`)
+      return
+    }
+    
     const currentOrder = STAGES.find(s => s.key === caseData?.status)?.order || 1
     const clickedOrder = STAGES.find(s => s.key === stage)?.order || 1
     
@@ -141,7 +147,7 @@ export default function CaseDetailPage() {
     }
     
     setViewingStage(stage)
-    toast.info(`正在查看 ${STAGES.find(s => s.key === stage)?.label}`)
+    toast.info(`正在编辑 ${STAGES.find(s => s.key === stage)?.label}`)
   }
 
   const handleBackToCurrent = () => {
@@ -152,7 +158,48 @@ export default function CaseDetailPage() {
   const renderForm = () => {
     if (!caseData) return null
 
+    const props = {
+      data: caseData,
+      attachments: attachments,
+      onSubmit: (data: any) => handleSave(data, true),
+      onSave: (data: any) => handleSave(data, false),
+    }
+
     if (viewingStage) {
+      if (caseData.status === 'completed') {
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-primary">
+                      {STAGES.find(s => s.key === viewingStage)?.label}
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      查看历史环节数据
+                    </p>
+                  </div>
+                  <Button onClick={handleBackToCurrent} variant="outline">
+                    返回总览
+                  </Button>
+                </div>
+              </CardHeader>
+            </Card>
+            <ReadOnlyForm data={caseData} stageKey={viewingStage} />
+          </div>
+        )
+      }
+      
+      // 为历史环节创建只包含保存草稿的props
+      const historicalProps = {
+        data: caseData,
+        attachments: attachments,
+        onSubmit: (data: any) => handleSave(data, false),
+        onSave: (data: any) => handleSave(data, false),
+        isHistorical: true,
+      }
+      
       return (
         <div className="space-y-6">
           <Card>
@@ -163,7 +210,7 @@ export default function CaseDetailPage() {
                     {STAGES.find(s => s.key === viewingStage)?.label}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    查看历史环节数据（仅供浏览，不可编辑）
+                    编辑历史环节数据
                   </p>
                 </div>
                 <Button onClick={handleBackToCurrent} variant="outline">
@@ -172,15 +219,26 @@ export default function CaseDetailPage() {
               </div>
             </CardHeader>
           </Card>
-          <ReadOnlyForm data={caseData} stageKey={viewingStage} />
+          {viewingStage === 'preparation' && <PreparationForm {...historicalProps} />
+          }
+          {viewingStage === 'motion' && <MotionForm {...historicalProps} />
+          }
+          {viewingStage === 'inspect_prep' && <InspectPrepForm {...historicalProps} />
+          }
+          {viewingStage === 'talk_recommend' && <TalkRecommendForm {...historicalProps} />
+          }
+          {viewingStage === 'meeting_recommend' && <MeetingRecommendForm {...historicalProps} />
+          }
+          {viewingStage === 'evaluation' && <EvaluationForm {...historicalProps} />
+          }
+          {viewingStage === 'four_must_check' && <FourMustCheckForm {...historicalProps} />
+          }
+          {viewingStage === 'deliberation' && <DeliberationForm {...historicalProps} />
+          }
+          {viewingStage === 'appointment' && <AppointmentForm {...historicalProps} />
+          }
         </div>
       )
-    }
-
-    const props = {
-      data: caseData,
-      onSubmit: (data: any) => handleSave(data, true),
-      onSave: (data: any) => handleSave(data, false),
     }
 
     switch (caseData.status) {
@@ -201,6 +259,9 @@ export default function CaseDetailPage() {
               <h3 className="text-xl font-bold mb-2">选拔流程已完成</h3>
               <p className="text-muted-foreground">
                 {caseData.candidate_name} 的选拔任用纪实档案已完整记录
+              </p>
+              <p className="text-sm text-muted-foreground mt-4">
+                点击左侧环节查看详细信息
               </p>
             </CardContent>
           </Card>
@@ -272,11 +333,12 @@ export default function CaseDetailPage() {
           <div className="lg:col-span-3 space-y-6">
             {renderForm()}
 
-            {!viewingStage && caseData.status !== 'completed' && (
+            {(
               <FileUpload
                 caseId={caseId}
-                stageKey={caseData.status}
+                stageKey={viewingStage || caseData.status}
                 attachments={attachments}
+                readOnly={caseData.status === 'completed'}
                 onUploadComplete={() => {
                   const stage = viewingStage || caseData.status
                   supabase.from('attachments').select('*').eq('case_id', caseId).eq('stage_key', stage)
