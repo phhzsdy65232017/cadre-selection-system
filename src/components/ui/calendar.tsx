@@ -14,15 +14,8 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   selected,
-  onSelect,
   ...props
 }: CalendarProps) {
-  const handleDayClick = (day: Date, modifiers: any) => {
-    if (!modifiers.disabled && !modifiers.hidden && onSelect) {
-      onSelect(day)
-    }
-  }
-
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -66,7 +59,6 @@ function Calendar({
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
       }}
       selected={selected}
-      onDayClick={handleDayClick}
       {...props}
     />
   )
