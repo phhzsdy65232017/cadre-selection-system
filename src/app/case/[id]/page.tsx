@@ -342,7 +342,7 @@ export default function CaseDetailPage() {
                 caseId={caseId}
                 stageKey={viewingStage || caseData.status}
                 attachments={attachments}
-                readOnly={caseData.status === 'completed' && viewingStage}
+                readOnly={caseData.status === 'completed' && viewingStage !== null}
                 onUploadComplete={() => {
                   const stage = viewingStage || caseData.status
                   supabase.from('attachments').select('*').eq('case_id', caseId).eq('stage_key', stage)
