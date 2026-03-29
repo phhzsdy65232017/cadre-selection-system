@@ -269,10 +269,6 @@ export default function Home() {
                                       setCases(prevCases => prevCases.filter(c => c.id !== caseItem.id));
                                     }
                                   })
-                                  .catch((err) => {
-                                    console.error('删除操作异常:', err);
-                                    toast.error('删除失败: 网络错误');
-                                  })
                               } else {
                                 console.log('用户取消删除');
                               }
