@@ -29,9 +29,10 @@ interface EvaluationFormProps {
   attachments?: Attachment[]
   onSubmit: (data: EvaluationFormData) => void
   onSave: (data: EvaluationFormData) => void
+  isHistorical?: boolean
 }
 
-export function EvaluationForm({ data, attachments, onSubmit, onSave }: EvaluationFormProps) {
+export function EvaluationForm({ data, attachments, onSubmit, onSave, isHistorical = false }: EvaluationFormProps) {
   const {
     register,
     handleSubmit,
@@ -176,7 +177,9 @@ export function EvaluationForm({ data, attachments, onSubmit, onSave }: Evaluati
         <Button type="button" variant="outline" onClick={handleSubmit(onSave)}>
           保存草稿
         </Button>
-        <Button type="submit">保存并进入下一环节</Button>
+        {!isHistorical && (
+          <Button type="submit">保存并进入下一环节</Button>
+        )}
       </div>
     </form>
   )

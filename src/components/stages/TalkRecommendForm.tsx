@@ -29,9 +29,10 @@ interface TalkRecommendFormProps {
   attachments?: Attachment[]
   onSubmit: (data: TalkRecommendFormData) => void
   onSave: (data: TalkRecommendFormData) => void
+  isHistorical?: boolean
 }
 
-export function TalkRecommendForm({ data, attachments, onSubmit, onSave }: TalkRecommendFormProps) {
+export function TalkRecommendForm({ data, attachments, onSubmit, onSave, isHistorical = false }: TalkRecommendFormProps) {
   const {
     register,
     handleSubmit,
@@ -173,7 +174,9 @@ export function TalkRecommendForm({ data, attachments, onSubmit, onSave }: TalkR
         <Button type="button" variant="outline" onClick={handleSubmit(onSave)}>
           保存草稿
         </Button>
-        <Button type="submit">保存并进入下一环节</Button>
+        {!isHistorical && (
+          <Button type="submit">保存并进入下一环节</Button>
+        )}
       </div>
     </form>
   )

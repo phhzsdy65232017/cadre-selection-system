@@ -23,9 +23,10 @@ interface FourMustCheckFormProps {
   attachments?: Attachment[]
   onSubmit: (data: FourMustCheckFormData) => void
   onSave: (data: FourMustCheckFormData) => void
+  isHistorical?: boolean
 }
 
-export function FourMustCheckForm({ data, attachments, onSubmit, onSave }: FourMustCheckFormProps) {
+export function FourMustCheckForm({ data, attachments, onSubmit, onSave, isHistorical = false }: FourMustCheckFormProps) {
   const {
     handleSubmit,
     setValue,
@@ -141,7 +142,9 @@ export function FourMustCheckForm({ data, attachments, onSubmit, onSave }: FourM
         <Button type="button" variant="outline" onClick={handleSubmit(onSave)}>
           保存草稿
         </Button>
-        <Button type="submit">保存并进入下一环节</Button>
+        {!isHistorical && (
+          <Button type="submit">保存并进入下一环节</Button>
+        )}
       </div>
     </form>
   )

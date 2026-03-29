@@ -29,9 +29,10 @@ interface MeetingRecommendFormProps {
   attachments?: Attachment[]
   onSubmit: (data: MeetingRecommendFormData) => void
   onSave: (data: MeetingRecommendFormData) => void
+  isHistorical?: boolean
 }
 
-export function MeetingRecommendForm({ data, attachments, onSubmit, onSave }: MeetingRecommendFormProps) {
+export function MeetingRecommendForm({ data, attachments, onSubmit, onSave, isHistorical = false }: MeetingRecommendFormProps) {
   const {
     register,
     handleSubmit,
@@ -173,7 +174,9 @@ export function MeetingRecommendForm({ data, attachments, onSubmit, onSave }: Me
         <Button type="button" variant="outline" onClick={handleSubmit(onSave)}>
           保存草稿
         </Button>
-        <Button type="submit">保存并进入下一环节</Button>
+        {!isHistorical && (
+          <Button type="submit">保存并进入下一环节</Button>
+        )}
       </div>
     </form>
   )

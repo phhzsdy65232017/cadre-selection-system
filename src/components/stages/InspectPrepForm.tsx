@@ -23,9 +23,10 @@ interface InspectPrepFormProps {
   attachments?: Attachment[]
   onSubmit: (data: InspectPrepFormData) => void
   onSave: (data: InspectPrepFormData) => void
+  isHistorical?: boolean
 }
 
-export function InspectPrepForm({ data, attachments, onSubmit, onSave }: InspectPrepFormProps) {
+export function InspectPrepForm({ data, attachments, onSubmit, onSave, isHistorical = false }: InspectPrepFormProps) {
   const {
     register,
     handleSubmit,
@@ -102,7 +103,9 @@ export function InspectPrepForm({ data, attachments, onSubmit, onSave }: Inspect
         <Button type="button" variant="outline" onClick={handleSubmit(onSave)}>
           保存草稿
         </Button>
-        <Button type="submit">保存并进入下一环节</Button>
+        {!isHistorical && (
+          <Button type="submit">保存并进入下一环节</Button>
+        )}
       </div>
     </form>
   )

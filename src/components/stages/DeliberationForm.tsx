@@ -29,9 +29,10 @@ interface DeliberationFormProps {
   attachments?: Attachment[]
   onSubmit: (data: DeliberationFormData) => void
   onSave: (data: DeliberationFormData) => void
+  isHistorical?: boolean
 }
 
-export function DeliberationForm({ data, attachments, onSubmit, onSave }: DeliberationFormProps) {
+export function DeliberationForm({ data, attachments, onSubmit, onSave, isHistorical = false }: DeliberationFormProps) {
   const {
     register,
     handleSubmit,
@@ -183,7 +184,9 @@ export function DeliberationForm({ data, attachments, onSubmit, onSave }: Delibe
         <Button type="button" variant="outline" onClick={handleSubmit(onSave)}>
           保存草稿
         </Button>
-        <Button type="submit">保存并进入下一环节</Button>
+        {!isHistorical && (
+          <Button type="submit">保存并进入下一环节</Button>
+        )}
       </div>
     </form>
   )

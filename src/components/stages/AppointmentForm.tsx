@@ -22,9 +22,10 @@ interface AppointmentFormProps {
   attachments?: Attachment[]
   onSubmit: (data: AppointmentFormData) => void
   onSave: (data: AppointmentFormData) => void
+  isHistorical?: boolean
 }
 
-export function AppointmentForm({ data, attachments, onSubmit, onSave }: AppointmentFormProps) {
+export function AppointmentForm({ data, attachments, onSubmit, onSave, isHistorical = false }: AppointmentFormProps) {
   const {
     register,
     handleSubmit,
@@ -99,7 +100,9 @@ export function AppointmentForm({ data, attachments, onSubmit, onSave }: Appoint
         <Button type="button" variant="outline" onClick={handleSubmit(onSave)}>
           保存草稿
         </Button>
-        <Button type="submit">完成选拔流程</Button>
+        {!isHistorical && (
+          <Button type="submit">保存并进入下一环节</Button>
+        )}
       </div>
     </form>
   )

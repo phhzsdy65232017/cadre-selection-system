@@ -18,6 +18,7 @@ import { EvaluationForm } from "@/components/stages/EvaluationForm"
 import { FourMustCheckForm } from "@/components/stages/FourMustCheckForm"
 import { DeliberationForm } from "@/components/stages/DeliberationForm"
 import { AppointmentForm } from "@/components/stages/AppointmentForm"
+import { CompletionForm } from "@/components/stages/CompletionForm"
 import { ReadOnlyForm } from "@/components/stages/ReadOnlyForm"
 import { toast } from "sonner"
 
@@ -163,6 +164,7 @@ export default function CaseDetailPage() {
       attachments: attachments,
       onSubmit: (data: any) => handleSave(data, true),
       onSave: (data: any) => handleSave(data, false),
+      isHistorical: false,
     }
 
     if (viewingStage) {
@@ -252,20 +254,22 @@ export default function CaseDetailPage() {
       case 'deliberation': return <DeliberationForm {...props} />
       case 'appointment': return <AppointmentForm {...props} />
       case 'completed':
-        return (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <h3 className="text-xl font-bold mb-2">选拔流程已完成</h3>
-              <p className="text-muted-foreground">
-                {caseData.candidate_name} 的选拔任用纪实档案已完整记录
-              </p>
-              <p className="text-sm text-muted-foreground mt-4">
-                点击左侧环节查看详细信息
-              </p>
-            </CardContent>
-          </Card>
-        )
+        // 当status为completed且viewingStage为null时，显示CompletionForm
+        if (!viewingStage) {
+          const completionProps = {
+            data: caseData,
+            attachments: attachments,
+            onSubmit: () => {
+              toast.success('选拔流程已完成！')
+            },
+            onSave: () => {
+              toast.success('保存成功')
+            },
+          }
+          return <CompletionForm {...completionProps} />
+        }
+        // 当viewingStage不为null时，显示ReadOnlyForm
+        return <ReadOnlyForm data={caseData} stageKey={viewingStage} />
       default: return null
     }
   }
@@ -338,7 +342,7 @@ export default function CaseDetailPage() {
                 caseId={caseId}
                 stageKey={viewingStage || caseData.status}
                 attachments={attachments}
-                readOnly={caseData.status === 'completed'}
+                readOnly={caseData.status === 'completed' && viewingStage}
                 onUploadComplete={() => {
                   const stage = viewingStage || caseData.status
                   supabase.from('attachments').select('*').eq('case_id', caseId).eq('stage_key', stage)
