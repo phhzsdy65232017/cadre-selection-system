@@ -197,7 +197,7 @@ export function DatePicker({ date, setDate, placeholder = "选择日期", disabl
         <div className="p-3">
           <Calendar
             selected={date}
-            onSelect={(selectedDate) => {
+            onDayClick={(selectedDate) => {
               if (selectedDate) {
                 setDate(selectedDate)
               }
