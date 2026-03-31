@@ -7,6 +7,7 @@ import { SelectionCase, Attachment } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { DatePicker } from "@/components/ui/date-picker"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 
@@ -36,6 +37,8 @@ export function DeliberationForm({ data, attachments, onSubmit, onSave, isHistor
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
   } = useForm<DeliberationFormData>({
     resolver: zodResolver(deliberationSchema),
     defaultValues: {
@@ -51,10 +54,12 @@ export function DeliberationForm({ data, attachments, onSubmit, onSave, isHistor
     },
   })
 
+  const watchedValues = watch()
+
   // 验证文件上传
   const validateFiles = (): boolean => {
     const requiredFiles = [
-      '常委会会议记录',
+      '党委会会议记录',
       '决定文件'
     ]
     
@@ -92,10 +97,9 @@ export function DeliberationForm({ data, attachments, onSubmit, onSave, isHistor
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="decision_meeting_time">会议时间</Label>
-              <Input
-                id="decision_meeting_time"
-                {...register("decision_meeting_time")}
-                placeholder="请输入会议时间"
+              <DatePicker
+                date={watchedValues.decision_meeting_time ? new Date(watchedValues.decision_meeting_time) : undefined}
+                setDate={(date) => date && setValue("decision_meeting_time", date.toISOString())}
               />
             </div>
             <div className="space-y-2">

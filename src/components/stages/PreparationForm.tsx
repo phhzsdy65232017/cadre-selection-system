@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DatePicker } from "@/components/ui/date-picker"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
@@ -130,11 +131,15 @@ export function PreparationForm({ data, attachments, onSubmit, onSave, isHistori
             </div>
             <div className="space-y-2">
               <Label htmlFor="prep_gender">性别</Label>
-              <Input
-                id="prep_gender"
-                {...register("prep_gender")}
-                placeholder="请输入性别"
-              />
+              <Select value={watchedValues.prep_gender || ""} onValueChange={(value) => setValue("prep_gender", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择性别" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="男">男</SelectItem>
+                  <SelectItem value="女">女</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="prep_nation">民族</Label>

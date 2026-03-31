@@ -71,12 +71,6 @@ export default function LoginPage() {
               {loading ? "登录中..." : "登录"}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            还没有账号?{" "}
-            <Link href="/auth/register" className="text-primary hover:underline">
-              注册账号
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>

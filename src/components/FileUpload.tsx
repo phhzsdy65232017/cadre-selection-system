@@ -42,7 +42,7 @@ const stageFileRequirements: Record<SelectionStage, string[]> = {
     '信访核查结果'
   ],
   deliberation: [
-    '常委会会议记录',
+    '党委会会议记录',
     '决定文件'
   ],
   appointment: [
